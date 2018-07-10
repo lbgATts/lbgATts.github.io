@@ -93,16 +93,16 @@
 
 
 
-<meta name="description" content="Spring Boot 自动装配的原理 在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIM">
+<meta name="description" content="在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @Documented @Inhe">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring Boot 自动装配的原理">
 <meta property="og:url" content="http://yoursite.com/2017/06/21/Spring_Boot自动装配原理/index.html">
 <meta property="og:site_name" content="Notes of all">
-<meta property="og:description" content="Spring Boot 自动装配的原理 在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIM">
-<meta property="og:updated_time" content="2018-07-10T15:00:12.469Z">
+<meta property="og:description" content="在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @Documented @Inhe">
+<meta property="og:updated_time" content="2018-07-10T15:08:00.137Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spring Boot 自动装配的原理">
-<meta name="twitter:description" content="Spring Boot 自动装配的原理 在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIM">
+<meta name="twitter:description" content="在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？ 先来看看 @SpringBootApplication 注解有什么奇妙之处： @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @Documented @Inhe">
 
 
 
@@ -377,8 +377,7 @@
       
 
       
-        <p>Spring Boot 自动装配的原理</p>
-<p>在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？</p>
+        <p>在Spring Boot的启动过程中，我们只要通过配置 @SpringBootApplication 就能让Spring Boot程序跑起来，这究竟有什么神奇的？</p>
 <p>先来看看 @SpringBootApplication 注解有什么奇妙之处：</p>
 <pre><code>@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -392,8 +391,7 @@
 public @interface SpringBootApplication {
     ....
 }
-</code></pre><p>在上面的代码中 有一段 @EnableAutoConfiguration ,  就是这个注解起了非常奇妙的作用，在往下跟 看看 @EnableAutoConfiguration 注解，</p>
-<p>看到其内部还有一个 @Import(EnableAutoConfigurationImportSelector.class) ，打开这个类</p>
+</code></pre><p>在上面的代码中 有一段 @EnableAutoConfiguration, 就是这个注解起了非常奇妙的作用，在往下跟 看看 @EnableAutoConfiguration 注解，看到其内部还有一个 @Import(EnableAutoConfigurationImportSelector.class) ，打开这个类</p>
 <pre><code>@Override
     public String[] selectImports(AnnotationMetadata annotationMetadata) {
         if (!isEnabled(annotationMetadata)) {
