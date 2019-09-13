@@ -93,17 +93,17 @@
 
 
 
-<meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/legacy/hello-world.html">
+<meta name="description" content="我们知道Netty是高性能的网络通信框架，如果你有心查看某些jar的依赖，你就会发现使用Netty作为底层通信的框架非常多，这里就不赘述了，这不是重点 我们从一个经典的Netty服务端启动模板开始： 服务端启动流程1234567891011121314151617public class NettyServer &amp;#123;    public static void main(String[]">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Netty 服务端启动过程">
+<meta property="og:url" content="http://yoursite.com/2018/03/01/Netty服务端启动过程/index.html">
 <meta property="og:site_name" content="Notes of all">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="我们知道Netty是高性能的网络通信框架，如果你有心查看某些jar的依赖，你就会发现使用Netty作为底层通信的框架非常多，这里就不赘述了，这不是重点 我们从一个经典的Netty服务端启动模板开始： 服务端启动流程1234567891011121314151617public class NettyServer &amp;#123;    public static void main(String[]">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-06-17T18:13:35.000Z">
+<meta property="og:updated_time" content="2018-10-04T12:16:55.754Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta name="twitter:title" content="Netty 服务端启动过程">
+<meta name="twitter:description" content="我们知道Netty是高性能的网络通信框架，如果你有心查看某些jar的依赖，你就会发现使用Netty作为底层通信的框架非常多，这里就不赘述了，这不是重点 我们从一个经典的Netty服务端启动模板开始： 服务端启动流程1234567891011121314151617public class NettyServer &amp;#123;    public static void main(String[]">
 
 
 
@@ -131,13 +131,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/legacy/hello-world.html"/>
+  <link rel="canonical" href="http://yoursite.com/2018/03/01/Netty服务端启动过程/"/>
 
 
 
 
 
-  <title>Hello World | Notes of all</title>
+  <title>Netty 服务端启动过程 | Notes of all</title>
   
 
 
@@ -281,27 +281,179 @@
             
 
   <div id="posts" class="posts-expand">
-  <header class="post-header">
+    
 
-	<h1 class="post-title" itemprop="name headline">Hello World</h1>
+  
 
+  
+  
+  
 
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/01/Netty服务端启动过程/">
 
-</header>
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="<a href='mailto:lfznh@126.com'>lfznh@126.com</a>">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/6e6d35d88ecf189920a5f046de513c31.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Notes of all">
+    </span>
 
     
-    
-      <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+      <header class="post-header">
 
+        
+        
+          <h1 class="post-title" itemprop="name headline">Netty 服务端启动过程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-01T16:01:10+08:00">
+                2018-03-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+
+                <a href="/2018/03/01/Netty服务端启动过程/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/01/Netty服务端启动过程/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+                    
+                    <span class="post-meta-item-icon">
+                                               <i class="fa fa-eye"></i>
+                                             </span>
+                       <span id="/2018/03/01/Netty服务端启动过程/" class="leancloud_visitors" data-flag-title="Netty 服务端启动过程">
+
+                         
+                           <span class="post-meta-item-text">阅读次数 </span>
+                         
+                           <span class="leancloud-visitors-count"></span>
+                       </span>
+                    
+
+
+
+
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
     
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们知道Netty是高性能的网络通信框架，如果你有心查看某些jar的依赖，你就会发现使用Netty作为底层通信的框架非常多，这里就不赘述了，这不是重点</p>
+<p>我们从一个经典的Netty服务端启动模板开始：</p>
+<h2 id="服务端启动流程"><a href="#服务端启动流程" class="headerlink" title="服务端启动流程"></a>服务端启动流程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class NettyServer &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        NioEventLoopGroup bossGroup = new NioEventLoopGroup();</span><br><span class="line">        NioEventLoopGroup workerGroup = new NioEventLoopGroup();</span><br><span class="line"></span><br><span class="line">        ServerBootstrap serverBootstrap = new ServerBootstrap();</span><br><span class="line">        serverBootstrap</span><br><span class="line">                .group(bossGroup, workerGroup)</span><br><span class="line">                .channel(NioServerSocketChannel.class)</span><br><span class="line">                .childHandler(new ChannelInitializer&lt;NioSocketChannel&gt;() &#123;</span><br><span class="line">                    protected void initChannel(NioSocketChannel ch) &#123;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line">        serverBootstrap.bind(8000);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>稍微做下解释：</p>
+<ul>
+<li>首先看到，我们创建了两个NioEventLoopGroup，这两个对象可以看做是传统IO编程模型的两大线程组，bossGroup表示监听端口，accept新连接的线程组，<br>workerGroup表示处理每一条连接的数据读写的线程组。用生活中的例子来讲就是，一个工厂要运作，必然要有一个老板负责从外面接活，然后有很多员工，<br>负责具体干活，老板就是bossGroup，员工们就是workerGroup，bossGroup接收完连接，扔给workerGroup去处理。</li>
+<li>接下来 我们创建了一个引导类 ServerBootstrap，这个类将引导我们进行服务端的启动工作，直接new出来开搞。<br>我们通过.group(bossGroup, workerGroup)给引导类配置两大线程组，这个引导类的线程模型也就定型了。</li>
+<li>然后，我们指定我们服务端的 IO 模型为NIO，我们通过.channel(NioServerSocketChannel.class)来指定 IO 模型，当然，这里也有其他的选择，<br>如果你想指定 IO 模型为 BIO，那么这里配置上OioServerSocketChannel.class类型即可，当然通常我们也不会这么做，因为Netty的优势就在于NIO。</li>
+<li>接着，我们调用childHandler()方法，给这个引导类创建一个ChannelInitializer，这里主要就是定义后续每条连接的数据读写，业务处理逻辑，<br>不理解没关系，在后面我们会详细分析。ChannelInitializer这个类中，我们注意到有一个泛型参数NioSocketChannel，这个类呢，<br>就是 Netty 对 NIO 类型的连接的抽象，而我们前面NioServerSocketChannel也是对 NIO 类型的连接的抽象，<br>NioServerSocketChannel和NioSocketChannel的概念可以和 BIO 编程模型中的ServerSocket以及Socket两个概念对应上</li>
+</ul>
+<p>我们的最小化参数配置到这里就完成了，我们总结一下就是，要启动一个Netty服务端，必须要指定三类属性，分别是线程模型、IO 模型、连接读写处理逻辑，<br>有了这三者，之后在调用bind(8000)，我们就可以在本地绑定一个 8000 端口启动起来，以上这段代码读者可以直接拷贝到你的 IDE 中运行</p>
+<h2 id="如何让端口绑定自动往上涨"><a href="#如何让端口绑定自动往上涨" class="headerlink" title="如何让端口绑定自动往上涨"></a>如何让端口绑定自动往上涨</h2><p>在上面代码中我们绑定了 8000 端口，接下来我们实现一个稍微复杂一点的逻辑，我们指定一个起始端口号，比如 1000，然后呢，<br>我们从1000号端口往上找一个端口，直到这个端口能够绑定成功，比如 1000 端口不可用，我们就尝试绑定 1001，然后 1002，依次类推。</p>
+<p>serverBootstrap.bind(8000);这个方法呢，它是一个异步的方法，调用之后是立即返回的，他的返回值是一个ChannelFuture，<br>我们可以给这个ChannelFuture添加一个监听器GenericFutureListener，然后我们在GenericFutureListener的operationComplete方法里面，<br>我们可以监听端口是否绑定成功，接下来是监测端口是否绑定成功的代码片段</p>
+<p>serverBootstrap.bind(8000).addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {<br>    public void operationComplete(Future&lt;? super Void&gt; future) {<br>        if (future.isSuccess()) {<br>            System.out.println(“端口绑定成功!”);<br>        } else {<br>            System.err.println(“端口绑定失败!”);<br>        }<br>    }<br>});</p>
+<p>我们接下来从 1000 端口号，开始往上找端口号，直到端口绑定成功，我们要做的就是在 if (future.isSuccess())的else逻辑里面重新绑定一个递增的端口号，接下来，我们把这段绑定逻辑抽取出一个bind方法</p>
+<p>private static void bind(final ServerBootstrap serverBootstrap, final int port) {<br>    serverBootstrap.bind(port).addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {<br>        public void operationComplete(Future&lt;? super Void&gt; future) {<br>    …</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/21/Zookeeper实现的分布式锁/" rel="next" title="Zookeeper 实现的分布式锁">
+                <i class="fa fa-chevron-left"></i> Zookeeper 实现的分布式锁
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
   </div>
 
 
@@ -404,7 +556,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-number">1.1.</span> <span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-number">1.2.</span> <span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-number">1.3.</span> <span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#服务端启动流程"><span class="nav-number">1.</span> <span class="nav-text">服务端启动流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何让端口绑定自动往上涨"><span class="nav-number">2.</span> <span class="nav-text">如何让端口绑定自动往上涨</span></a></li></ol></div>
             
 
           </div>
@@ -521,10 +673,10 @@
   
 
   
-    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
 
-  
+
 
   
 
@@ -545,9 +697,9 @@
     
       <script type="text/javascript">
         var disqus_config = function () {
-          this.page.url = 'http://yoursite.com/legacy/hello-world.html';
-          this.page.identifier = 'legacy/hello-world.html';
-          this.page.title = 'Hello World';
+          this.page.url = 'http://yoursite.com/2018/03/01/Netty服务端启动过程/';
+          this.page.identifier = '2018/03/01/Netty服务端启动过程/';
+          this.page.title = 'Netty 服务端启动过程';
         };
         var d = document, s = d.createElement('script');
         s.src = 'https://.disqus.com/embed.js';

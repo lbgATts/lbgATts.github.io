@@ -1,0 +1,1107 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon-20170618014820279.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="我们都知道，Spring Cloud Ribbon你可以实现客户端的负载均衡，看看它内部是如何实现的？ 首先，Spring Cloud Ribbon 是用 RestTemplate 来实现负载均衡的，RestTemplate不是Spring的东西吗，常用的RestTemplate并没有实现负载均衡啊 它只不过是一个网络请求封装好的库，没什么神秘的啊 12345678@Configurationpu">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Spring Cloud Ribbon 源码解析">
+<meta property="og:url" content="http://yoursite.com/legacy/Spring Ribbon 源码解析.html">
+<meta property="og:site_name" content="Notes of all">
+<meta property="og:description" content="我们都知道，Spring Cloud Ribbon你可以实现客户端的负载均衡，看看它内部是如何实现的？ 首先，Spring Cloud Ribbon 是用 RestTemplate 来实现负载均衡的，RestTemplate不是Spring的东西吗，常用的RestTemplate并没有实现负载均衡啊 它只不过是一个网络请求封装好的库，没什么神秘的啊 12345678@Configurationpu">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1447174-7dbae5dd4b364c19.png">
+<meta property="og:updated_time" content="2018-10-07T10:52:26.179Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Cloud Ribbon 源码解析">
+<meta name="twitter:description" content="我们都知道，Spring Cloud Ribbon你可以实现客户端的负载均衡，看看它内部是如何实现的？ 首先，Spring Cloud Ribbon 是用 RestTemplate 来实现负载均衡的，RestTemplate不是Spring的东西吗，常用的RestTemplate并没有实现负载均衡啊 它只不过是一个网络请求封装好的库，没什么神秘的啊 12345678@Configurationpu">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1447174-7dbae5dd4b364c19.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/legacy/Spring Ribbon 源码解析.html"/>
+
+
+
+
+
+  <title>Spring Cloud Ribbon 源码解析 | Notes of all</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Notes of all</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Found your interests</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-api"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+  <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">Spring Cloud Ribbon 源码解析</h1>
+
+
+
+</header>
+
+    
+    
+      <p>我们都知道，Spring Cloud Ribbon你可以实现客户端的负载均衡，看看它内部是如何实现的？</p>
+<p>首先，Spring Cloud Ribbon 是用 RestTemplate 来实现负载均衡的，RestTemplate不是Spring的东西吗，常用的RestTemplate并没有实现负载均衡啊</p>
+<p>它只不过是一个网络请求封装好的库，没什么神秘的啊</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class RibbonConfig &#123;</span><br><span class="line">    @Bean</span><br><span class="line">    @LoadBalanced</span><br><span class="line">    RestTemplate restTemplate() &#123;</span><br><span class="line">        return new RestTemplate();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在使用Spring Cloud Ribbon 的时候，一般都是这样使用的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class RibbonService &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    RestTemplate restTemplate;</span><br><span class="line">    public String hi(String name) &#123;</span><br><span class="line">        return restTemplate.getForObject(&quot;http://eureka-client/hi?name=&quot;+name,String.class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ConditionalOnClass(RestTemplate.class)</span><br><span class="line">@ConditionalOnBean(LoadBalancerClient.class)</span><br><span class="line">@EnableConfigurationProperties(LoadBalancerRetryProperties.class)</span><br><span class="line">public class LoadBalancerAutoConfiguration &#123;</span><br><span class="line"></span><br><span class="line">	@LoadBalanced</span><br><span class="line">	@Autowired(required = false)</span><br><span class="line">	private List&lt;RestTemplate&gt; restTemplates = Collections.emptyList();</span><br><span class="line"></span><br><span class="line">	@Bean</span><br><span class="line">	public SmartInitializingSingleton loadBalancedRestTemplateInitializer(</span><br><span class="line">			final List&lt;RestTemplateCustomizer&gt; customizers) &#123;</span><br><span class="line">		return new SmartInitializingSingleton() &#123;</span><br><span class="line">			@Override</span><br><span class="line">			public void afterSingletonsInstantiated() &#123;</span><br><span class="line">				for (RestTemplate restTemplate : LoadBalancerAutoConfiguration.this.restTemplates) &#123;</span><br><span class="line">					for (RestTemplateCustomizer customizer : customizers) &#123;</span><br><span class="line">						customizer.customize(restTemplate);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Autowired(required = false)</span><br><span class="line">	private List&lt;LoadBalancerRequestTransformer&gt; transformers = Collections.emptyList();</span><br><span class="line"></span><br><span class="line">	@Bean</span><br><span class="line">	@ConditionalOnMissingBean</span><br><span class="line">	public LoadBalancerRequestFactory loadBalancerRequestFactory(</span><br><span class="line">			LoadBalancerClient loadBalancerClient) &#123;</span><br><span class="line">		return new LoadBalancerRequestFactory(loadBalancerClient, transformers);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Configuration</span><br><span class="line">	@ConditionalOnMissingClass(&quot;org.springframework.retry.support.RetryTemplate&quot;)</span><br><span class="line">	static class LoadBalancerInterceptorConfig &#123;</span><br><span class="line">		@Bean</span><br><span class="line">		public LoadBalancerInterceptor ribbonInterceptor(</span><br><span class="line">				LoadBalancerClient loadBalancerClient,</span><br><span class="line">				LoadBalancerRequestFactory requestFactory) &#123;</span><br><span class="line">			return new LoadBalancerInterceptor(loadBalancerClient, requestFactory);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public RestTemplateCustomizer restTemplateCustomizer(</span><br><span class="line">				final LoadBalancerInterceptor loadBalancerInterceptor) &#123;</span><br><span class="line">			return new RestTemplateCustomizer() &#123;</span><br><span class="line">				@Override</span><br><span class="line">				public void customize(RestTemplate restTemplate) &#123;</span><br><span class="line">					List&lt;ClientHttpRequestInterceptor&gt; list = new ArrayList&lt;&gt;(</span><br><span class="line">							restTemplate.getInterceptors());</span><br><span class="line">					list.add(loadBalancerInterceptor);</span><br><span class="line">					restTemplate.setInterceptors(list);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Configuration</span><br><span class="line">	@ConditionalOnClass(RetryTemplate.class)</span><br><span class="line">	public static class RetryAutoConfiguration &#123;</span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public RetryTemplate retryTemplate() &#123;</span><br><span class="line">			RetryTemplate template =  new RetryTemplate();</span><br><span class="line">			template.setThrowLastExceptionOnExhausted(true);</span><br><span class="line">			return template;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory() &#123;</span><br><span class="line">			return new LoadBalancedRetryPolicyFactory.NeverRetryFactory();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public LoadBalancedBackOffPolicyFactory loadBalancedBackOffPolicyFactory() &#123;</span><br><span class="line">			return new LoadBalancedBackOffPolicyFactory.NoBackOffPolicyFactory();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public LoadBalancedRetryListenerFactory loadBalancedRetryListenerFactory() &#123;</span><br><span class="line">			return new LoadBalancedRetryListenerFactory.DefaultRetryListenerFactory();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Configuration</span><br><span class="line">	@ConditionalOnClass(RetryTemplate.class)</span><br><span class="line">	public static class RetryInterceptorAutoConfiguration &#123;</span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public RetryLoadBalancerInterceptor ribbonInterceptor(</span><br><span class="line">				LoadBalancerClient loadBalancerClient, LoadBalancerRetryProperties properties,</span><br><span class="line">				LoadBalancedRetryPolicyFactory lbRetryPolicyFactory,</span><br><span class="line">				LoadBalancerRequestFactory requestFactory,</span><br><span class="line">				LoadBalancedBackOffPolicyFactory backOffPolicyFactory,</span><br><span class="line">				LoadBalancedRetryListenerFactory retryListenerFactory) &#123;</span><br><span class="line">			return new RetryLoadBalancerInterceptor(loadBalancerClient, properties,</span><br><span class="line">					lbRetryPolicyFactory, requestFactory, backOffPolicyFactory, retryListenerFactory);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Bean</span><br><span class="line">		@ConditionalOnMissingBean</span><br><span class="line">		public RestTemplateCustomizer restTemplateCustomizer(</span><br><span class="line">				final RetryLoadBalancerInterceptor loadBalancerInterceptor) &#123;</span><br><span class="line">			return new RestTemplateCustomizer() &#123;</span><br><span class="line">				@Override</span><br><span class="line">				public void customize(RestTemplate restTemplate) &#123;</span><br><span class="line">					List&lt;ClientHttpRequestInterceptor&gt; list = new ArrayList&lt;&gt;(</span><br><span class="line">							restTemplate.getInterceptors());</span><br><span class="line">					list.add(loadBalancerInterceptor);</span><br><span class="line">					restTemplate.setInterceptors(list);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在该自动化配置类中，主要做了下面三件事：</p>
+<p>创建了一个LoadBalancerInterceptor的Bean，用于实现对客户端发起请求时进行拦截，以实现客户端负载均衡。<br>创建了一个RestTemplateCustomizer的Bean，用于给RestTemplate增加LoadBalancerInterceptor拦截器。<br>维护了一个被@LoadBalanced注解修饰的RestTemplate对象列表，并在这里进行初始化，通过调用RestTemplateCustomizer的实例来给需要客户端负载均衡的RestTemplate增加LoadBalancerInterceptor拦截器</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1447174-7dbae5dd4b364c19.png" alt="类结构示意图"></p>
+<p>在上图中，可以看到有一个 <code>LoadBalancerClient</code>, 里面有一个很重要的方法 reconstructURI</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public interface LoadBalancerClient &#123;</span><br><span class="line"></span><br><span class="line">    ServiceInstance choose(String serviceId);</span><br><span class="line"></span><br><span class="line">    &lt;T&gt; T execute(String serviceId, LoadBalancerRequest&lt;T&gt; request) throws IOException;</span><br><span class="line"></span><br><span class="line">    URI reconstructURI(ServiceInstance instance, URI original);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ServiceInstance choose(String serviceId)：根据传入的服务名serviceId，从负载均衡器中挑选一个对应服务的实例。</li>
+<li>T execute(String serviceId, LoadBalancerRequest request) throws IOException：使用从负载均衡器中挑选出的服务实例来执行请求内容。</li>
+<li>URI reconstructURI(ServiceInstance instance, URI original)：为系统构建一个合适的“host:port”形式的URI。<br>在分布式系统中，我们使用逻辑上的服务名称作为host来构建URI（替代服务实例的“host:port”形式）进行请求，比如：<a href="http://myservice/path/to/service。在该操作的定义中，前者ServiceInstance对象是带有host和port的具体服务实例，而后者URI对象则是使用逻辑服务名定义为host的URI，而返回的URI内容则是通过ServiceInstance的服务实例详情拼接出的具体“host:post”形式的请求地址" target="_blank" rel="noopener">http://myservice/path/to/service。在该操作的定义中，前者ServiceInstance对象是带有host和port的具体服务实例，而后者URI对象则是使用逻辑服务名定义为host的URI，而返回的URI内容则是通过ServiceInstance的服务实例详情拼接出的具体“host:post”形式的请求地址</a></li>
+</ul>
+<p>在上述的，有一个 LoadBalancerInterceptor<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor &#123;</span><br><span class="line"></span><br><span class="line">    private LoadBalancerClient loadBalancer;</span><br><span class="line"></span><br><span class="line">    public LoadBalancerInterceptor(LoadBalancerClient loadBalancer) &#123;</span><br><span class="line">        this.loadBalancer = loadBalancer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public ClientHttpResponse intercept(final HttpRequest request, final byte[] body,</span><br><span class="line">            final ClientHttpRequestExecution execution) throws IOException &#123;</span><br><span class="line">        final URI originalUri = request.getURI();</span><br><span class="line">        String serviceName = originalUri.getHost();</span><br><span class="line">        return this.loadBalancer.execute(serviceName,</span><br><span class="line">                new LoadBalancerRequest&lt;ClientHttpResponse&gt;() &#123;</span><br><span class="line">                    @Override</span><br><span class="line">                    public ClientHttpResponse apply(final ServiceInstance instance)</span><br><span class="line">                            throws Exception &#123;</span><br><span class="line">                        HttpRequest serviceRequest = new ServiceRequestWrapper(request,</span><br><span class="line">                                instance);</span><br><span class="line">                        return execution.execute(serviceRequest, body);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private class ServiceRequestWrapper extends HttpRequestWrapper &#123;</span><br><span class="line"></span><br><span class="line">        private final ServiceInstance instance;</span><br><span class="line"></span><br><span class="line">        public ServiceRequestWrapper(HttpRequest request, ServiceInstance instance) &#123;</span><br><span class="line">            super(request);</span><br><span class="line">            this.instance = instance;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        public URI getURI() &#123;</span><br><span class="line">            URI uri = LoadBalancerInterceptor.this.loadBalancer.reconstructURI(</span><br><span class="line">                    this.instance, getRequest().getURI());</span><br><span class="line">            return uri;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上述类中，可以看到，<code>LoadBalancer</code> 被注入了 <code>LoadBalancerClient</code> 的实现，在执行 Intercept 的时候，</p>
+<p>那么随之而来的问题是，默认的 <code>LoadBalancerClient</code> 是在哪个实现类，它只有一个默认实现类 <code>RibbonLoadBalancerClient</code></p>
+<p>看看 <code>RibbonLoadBalancerClient</code> 这里究竟是怎么实现的额：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br></pre></td><td class="code"><pre><span class="line">public class RibbonLoadBalancerClient implements LoadBalancerClient &#123;</span><br><span class="line"></span><br><span class="line">	private SpringClientFactory clientFactory;</span><br><span class="line"></span><br><span class="line">	public RibbonLoadBalancerClient(SpringClientFactory clientFactory) &#123;</span><br><span class="line">		this.clientFactory = clientFactory;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public URI reconstructURI(ServiceInstance instance, URI original) &#123;</span><br><span class="line">		Assert.notNull(instance, &quot;instance can not be null&quot;);</span><br><span class="line">		String serviceId = instance.getServiceId();</span><br><span class="line">		RibbonLoadBalancerContext context = this.clientFactory</span><br><span class="line">				.getLoadBalancerContext(serviceId);</span><br><span class="line">		Server server = new Server(instance.getHost(), instance.getPort());</span><br><span class="line">		IClientConfig clientConfig = clientFactory.getClientConfig(serviceId);</span><br><span class="line">		ServerIntrospector serverIntrospector = serverIntrospector(serviceId);</span><br><span class="line">		URI uri = RibbonUtils.updateToHttpsIfNeeded(original, clientConfig,</span><br><span class="line">				serverIntrospector, server);</span><br><span class="line">		return context.reconstructURIWithServer(server, uri);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public ServiceInstance choose(String serviceId) &#123;</span><br><span class="line">		Server server = getServer(serviceId);</span><br><span class="line">		if (server == null) &#123;</span><br><span class="line">			return null;</span><br><span class="line">		&#125;</span><br><span class="line">		return new RibbonServer(serviceId, server, isSecure(server, serviceId),</span><br><span class="line">				serverIntrospector(serviceId).getMetadata(server));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public &lt;T&gt; T execute(String serviceId, LoadBalancerRequest&lt;T&gt; request) throws IOException &#123;</span><br><span class="line">		ILoadBalancer loadBalancer = getLoadBalancer(serviceId);</span><br><span class="line">		Server server = getServer(loadBalancer);</span><br><span class="line">		if (server == null) &#123;</span><br><span class="line">			throw new IllegalStateException(&quot;No instances available for &quot; + serviceId);</span><br><span class="line">		&#125;</span><br><span class="line">		RibbonServer ribbonServer = new RibbonServer(serviceId, server, isSecure(server,</span><br><span class="line">				serviceId), serverIntrospector(serviceId).getMetadata(server));</span><br><span class="line"></span><br><span class="line">		return execute(serviceId, ribbonServer, request);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public &lt;T&gt; T execute(String serviceId, ServiceInstance serviceInstance, LoadBalancerRequest&lt;T&gt; request) throws IOException &#123;</span><br><span class="line">		Server server = null;</span><br><span class="line">		if(serviceInstance instanceof RibbonServer) &#123;</span><br><span class="line">			server = ((RibbonServer)serviceInstance).getServer();</span><br><span class="line">		&#125;</span><br><span class="line">		if (server == null) &#123;</span><br><span class="line">			throw new IllegalStateException(&quot;No instances available for &quot; + serviceId);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		RibbonLoadBalancerContext context = this.clientFactory</span><br><span class="line">				.getLoadBalancerContext(serviceId);</span><br><span class="line">		RibbonStatsRecorder statsRecorder = new RibbonStatsRecorder(context, server);</span><br><span class="line"></span><br><span class="line">		try &#123;</span><br><span class="line">			T returnVal = request.apply(serviceInstance);</span><br><span class="line">			statsRecorder.recordStats(returnVal);</span><br><span class="line">			return returnVal;</span><br><span class="line">		&#125;</span><br><span class="line">		// catch IOException and rethrow so RestTemplate behaves correctly</span><br><span class="line">		catch (IOException ex) &#123;</span><br><span class="line">			statsRecorder.recordStats(ex);</span><br><span class="line">			throw ex;</span><br><span class="line">		&#125;</span><br><span class="line">		catch (Exception ex) &#123;</span><br><span class="line">			statsRecorder.recordStats(ex);</span><br><span class="line">			ReflectionUtils.rethrowRuntimeException(ex);</span><br><span class="line">		&#125;</span><br><span class="line">		return null;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	private ServerIntrospector serverIntrospector(String serviceId) &#123;</span><br><span class="line">		ServerIntrospector serverIntrospector = this.clientFactory.getInstance(serviceId,</span><br><span class="line">				ServerIntrospector.class);</span><br><span class="line">		if (serverIntrospector == null) &#123;</span><br><span class="line">			serverIntrospector = new DefaultServerIntrospector();</span><br><span class="line">		&#125;</span><br><span class="line">		return serverIntrospector;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	private boolean isSecure(Server server, String serviceId) &#123;</span><br><span class="line">		IClientConfig config = this.clientFactory.getClientConfig(serviceId);</span><br><span class="line">		ServerIntrospector serverIntrospector = serverIntrospector(serviceId);</span><br><span class="line">		return RibbonUtils.isSecure(config, serverIntrospector, server);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	protected Server getServer(String serviceId) &#123;</span><br><span class="line">		return getServer(getLoadBalancer(serviceId));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	protected Server getServer(ILoadBalancer loadBalancer) &#123;</span><br><span class="line">		if (loadBalancer == null) &#123;</span><br><span class="line">			return null;</span><br><span class="line">		&#125;</span><br><span class="line">		return loadBalancer.chooseServer(&quot;default&quot;); // TODO: better handling of key</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	protected ILoadBalancer getLoadBalancer(String serviceId) &#123;</span><br><span class="line">		return this.clientFactory.getLoadBalancer(serviceId);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public static class RibbonServer implements ServiceInstance &#123;</span><br><span class="line">		private final String serviceId;</span><br><span class="line">		private final Server server;</span><br><span class="line">		private final boolean secure;</span><br><span class="line">		private Map&lt;String, String&gt; metadata;</span><br><span class="line"></span><br><span class="line">		public RibbonServer(String serviceId, Server server) &#123;</span><br><span class="line">			this(serviceId, server, false, Collections.&lt;String, String&gt; emptyMap());</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		public RibbonServer(String serviceId, Server server, boolean secure,</span><br><span class="line">				Map&lt;String, String&gt; metadata) &#123;</span><br><span class="line">			this.serviceId = serviceId;</span><br><span class="line">			this.server = server;</span><br><span class="line">			this.secure = secure;</span><br><span class="line">			this.metadata = metadata;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public String getServiceId() &#123;</span><br><span class="line">			return this.serviceId;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public String getHost() &#123;</span><br><span class="line">			return this.server.getHost();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public int getPort() &#123;</span><br><span class="line">			return this.server.getPort();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public boolean isSecure() &#123;</span><br><span class="line">			return this.secure;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public URI getUri() &#123;</span><br><span class="line">			return DefaultServiceInstance.getUri(this);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public Map&lt;String, String&gt; getMetadata() &#123;</span><br><span class="line">			return this.metadata;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		public Server getServer() &#123;</span><br><span class="line">			return this.server;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public String toString() &#123;</span><br><span class="line">			final StringBuffer sb = new StringBuffer(&quot;RibbonServer&#123;&quot;);</span><br><span class="line">			sb.append(&quot;serviceId=&apos;&quot;).append(serviceId).append(&apos;\&apos;&apos;);</span><br><span class="line">			sb.append(&quot;, server=&quot;).append(server);</span><br><span class="line">			sb.append(&quot;, secure=&quot;).append(secure);</span><br><span class="line">			sb.append(&quot;, metadata=&quot;).append(metadata);</span><br><span class="line">			sb.append(&apos;&#125;&apos;);</span><br><span class="line">			return sb.toString();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过查阅三个关键方法，可以得出 Spring Cloud Ribbon 之所以能做到负载均衡，是加入了请求拦截，在请求拦截的逻辑里，会根据serviceName 和 负载策略去注册中心</p>
+<p>抓 serviceName 对应的IP和port，然后拼装成一个完成的请求地址，交给 RestTemplate 去请求</p>
+<p>关于 负载均衡器 在下篇有介绍！</p>
+
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/6e6d35d88ecf189920a5f046de513c31.jpg"
+               alt="<a href='mailto:lfznh@126.com'>lfznh@126.com</a>" />
+          <p class="site-author-name" itemprop="name"><a href='mailto:lfznh@126.com'>lfznh@126.com</a></p>
+           
+              <p class="site-description motion-element" itemprop="description">Welcome,friends!</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  <span itemprop="copyrightYear">求助邮箱:</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href='mailto:lfznh@126.com'>lfznh@126.com</a></span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/legacy/Spring Ribbon 源码解析.html';
+          this.page.identifier = 'legacy/Spring Ribbon 源码解析.html';
+          this.page.title = 'Spring Cloud Ribbon 源码解析';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("LhUv19DxkDBYEaxuTYLYTOSV-gzGzoHsz", "2XJjRBkgni6fjQRobMs8O1uU");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    	 <!-- custom analytics part create by xiamo -->
+<script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+<script>AV.initialize("LhUv19DxkDBYEaxuTYLYTOSV-gzGzoHsz", "2XJjRBkgni6fjQRobMs8O1uU");</script>
+<script>
+function showTime(Counter) {
+	var query = new AV.Query(Counter);
+	$(".leancloud_visitors").each(function() {
+		var url = $(this).attr("id").trim();
+		query.equalTo("url", url);
+		query.find({
+			success: function(results) {
+				if (results.length == 0) {
+					var content = $(document.getElementById(url)).text() + ': 0';
+					$(document.getElementById(url)).text(content);
+					return;
+				}
+				for (var i = 0; i < results.length; i++) {
+					var object = results[i];
+					var content = $(document.getElementById(url)).text() + ': ' + object.get('time');
+					$(document.getElementById(url)).text(content);
+				}
+			},
+			error: function(object, error) {
+				console.log("Error: " + error.code + " " + error.message);
+			}
+		});
+	});
+}
+function addCount(Counter) {
+	var Counter = AV.Object.extend("Counter");
+	url = $(".leancloud_visitors").attr('id').trim();
+	title = $(".leancloud_visitors").attr('data-flag-title').trim();
+	var query = new AV.Query(Counter);
+	query.equalTo("url", url);
+	query.find({
+		success: function(results) {
+			if (results.length > 0) {
+				var counter = results[0];
+				counter.fetchWhenSave(true);
+				counter.increment("time");
+				counter.save(null, {
+					success: function(counter) {
+						var content = '阅读次数'+': ' + counter.get('time');
+						$(document.getElementById(url)).text(content);
+					},
+					error: function(counter, error) {
+						console.log('Failed to save Visitor num, with error message: ' + error.message);
+					}
+				});
+			} else {
+				var newcounter = new Counter();
+				newcounter.set("title", title);
+				newcounter.set("url", url);
+				newcounter.set("time", 1);
+				newcounter.save(null, {
+					success: function(newcounter) {
+					    console.log("newcounter.get('time')="+newcounter.get('time'));
+						var content = $(document.getElementById(url)).text() + ': ' + newcounter.get('time');
+						$(document.getElementById(url)).text(content);
+					},
+					error: function(newcounter, error) {
+						console.log('Failed to create');
+					}
+				});
+			}
+		},
+		error: function(error) {
+			console.log('Error:' + error.code + " " + error.message);
+		}
+	});
+}
+$(function() {
+	var Counter = AV.Object.extend("Counter");
+	if ($('.leancloud_visitors').length == 1) {
+		addCount(Counter);
+	} else if ($('.post-title-link').length > 1) {
+		showTime(Counter);
+	}
+});
+</script>
+
+    
+</body>
+</html>
