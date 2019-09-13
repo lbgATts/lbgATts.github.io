@@ -93,17 +93,17 @@
 
 
 
-<meta name="description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁，咱开始吧： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zo">
+<meta name="description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zookeep">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Zookeeper 实现的分布式锁">
 <meta property="og:url" content="http://yoursite.com/2018/01/21/Zookeeper实现的分布式锁/index.html">
 <meta property="og:site_name" content="Notes of all">
-<meta property="og:description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁，咱开始吧： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zo">
+<meta property="og:description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zookeep">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-10-04T12:06:45.232Z">
+<meta property="og:updated_time" content="2019-09-13T04:59:09.852Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Zookeeper 实现的分布式锁">
-<meta name="twitter:description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁，咱开始吧： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zo">
+<meta name="twitter:description" content="我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁： 分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper的话，它也会尝试去创建这样一个节点，但是在Zookeep">
 
 
 
@@ -368,7 +368,7 @@
       
 
       
-        <p>我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来<br>实现一个原型版本的分布式锁，咱开始吧：</p>
+        <p>我们知道Zookeeper是分布式领域一个非常重要的框架，大多用在做注册中心，也可以用来做负载均衡，当然也可以用来做分布式锁，本文尝试用Zookeeper来实现一个原型版本的分布式锁：</p>
 <p>分布式锁的实现原理也很简单：在Zookeeper中，如果一个线程能够先创建一个临时节点(这个节点必须是实现约定好的)，那么其他的服务如果还走Zookeeper<br>的话，它也会尝试去创建这样一个节点，但是在Zookeeper里，树形结构里是不允许相同节点存在的，在节点上不行，在节点的节点也不行，其实这是个递归概念<br>啦，所以利用这个特定可以达到互斥访问的一个特点，当获得锁的线程执行完了业务逻辑，它就把这个节点删除，其他的线程再次争抢谁先创建这个节点，谁就<br>获得这个分布式锁</p>
 <p>引入这两个最重要的依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;com.101tec&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;zkclient&lt;/artifactId&gt;</span><br><span class="line">        &lt;version&gt;0.3&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.zookeeper&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;zookeeper&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;3.4.6&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
 <p><code>Lock.java</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface Lock &#123;</span><br><span class="line">    void getLock();</span><br><span class="line">    void unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
